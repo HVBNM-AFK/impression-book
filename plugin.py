@@ -104,7 +104,7 @@ class AutoJudgeConfig(PluginConfigBase):
     __ui_icon__ = "scale"
     __ui_order__ = 5
 
-    enabled: bool = Field(default=True, description="是否由 Bot 根据发言自动微调好感度与印象")
+    enabled: bool = Field(default=False, description="是否由 Bot 根据发言自动微调好感度与印象（开启后会把成员近期发言原文发送给宿主配置的 LLM，请确认群内成员知情同意）")
     judge_every_n_messages: int = Field(default=8, description="每人累计多少条发言后触发一次评估")
     cooldown_minutes: int = Field(default=30, description="同一成员两次评估的最小间隔（分钟）")
     model_task: str = Field(default="", description="评估所用的模型任务名，留空使用宿主默认任务")
@@ -240,10 +240,13 @@ class ImpressionBookPlugin(MaiBotPlugin):
         self._track_task(self._flush_task)
 
     async def on_unload(self) -> None:
-        """取消后台任务并落盘全部数据。"""
+        """取消后台任务、等待其真正退出后，落盘全部数据。"""
 
-        for task in (self._flush_task, *self._tasks):
+        for task in self._tasks:
             task.cancel()
+        if self._tasks:
+            # 等待任务实际结束，避免最后一笔评估结果在取消途中被丢弃
+            await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
         await self._store.save_profiles()
         await self._store.save_impressions()

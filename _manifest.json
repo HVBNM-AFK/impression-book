@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "印象簿（亲密度与人际印象管理）",
   "description": "让 Bot 全局识别每位群成员，维护好感度与印象条目，支持向量检索与上下文注入；好感度由 Bot 自动评估微调，主人可通过 QQ 号认证的指令随时调整",
   "author": {
@@ -26,14 +26,12 @@
   "dependencies": [],
   "capabilities": [
     "send.text",
-    "config.get",
     "llm.embed",
     "llm.generate",
     "maisaka.context.append"
   ],
   "i18n": {
     "default_locale": "zh-CN",
-    "locales_path": "_locales",
     "supported_locales": [
       "zh-CN"
     ]
